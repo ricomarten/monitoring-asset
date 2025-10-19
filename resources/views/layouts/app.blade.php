@@ -1,152 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Laravel App')</title>
+    <title>@yield('title', 'BRI App Activity Dashboard')</title>
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- DataTables CSS -->
-    <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
-    <!-- Font Awesome for Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
+    @yield('head')
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            color: #333;
+            background-color: #f8f9fa;
+        }
 
-    @yield('head') <!-- Allow custom styles/scripts in child views -->
+        .navbar-brand {
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-link {
+            color: #6c757d;
+            padding: 10px 16px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s;
+        }
+
+        .nav-link.active,
+        .nav-link:hover {
+            background-color: #6f42c1;
+            color: white;
+            border-radius: 25px;
+        }
+
+        .nav-link i {
+            margin-right: 8px;
+        }
+
+        .pagination li a, .pagination li span {
+            font-size: 12px;
+            padding: 4px 10px;
+        }
+
+        .sidebar {
+            background-color: #fff;
+            min-height: 100vh;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .table td, .table th {
+            font-size: 13px;
+        }
+    </style>
 </head>
-<style>
-    /* Mengatur jenis font dan ukuran font global */
-    body {
-        font-family: 'Roboto', sans-serif;
-        font-size: 14px;
-        color: #333;
-    }
-
-    /* Teks dalam card, tabel, dan elemen lainnya akan mengikuti ukuran font default */
-    .card, .table, .navbar{
-        font-family: 'Roboto', sans-serif;
-        font-size: 14px;
-    }
-
-    /* Menambahkan spasi tambahan di bawah setiap header untuk jarak */
-    h1, h2, h3, h4, h5, h6 {
-        margin-bottom: 10px;
-    }
-
-    /* Mengurangi ukuran font di dalam tabel untuk tampilan yang lebih ringkas */
-    .table td, .table th {
-        font-size: 13px;
-    }
-
-    /* Kelas untuk tombol navigasi */
-    .nav-link {
-        color: #6c757d; /* Teks berwarna abu-abu */
-        padding: 12px 20px;
-        border-radius: 10px; /* Sudut melengkung */
-        transition: background-color 0.3s, color 0.3s;
-        text-decoration: none; /* Menghilangkan garis bawah pada link */
-    }
-
-    /* Ikon panah di sebelah kanan */
-    .nav-link .fa-arrow-right {
-        font-size: 16px; /* Ukuran ikon panah */
-        transition: transform 0.3s;
-    }
-
-    /* Efek hover pada nav-link */
-    .nav-link:hover {
-        background-color: #6f42c1; /* Warna biru keunguan saat hover */
-        color: white; /* Mengubah warna teks menjadi putih saat hover */
-        border-radius: 25px; /* Menambahkan efek rounded saat hover */
-    }
-
-    /* Mengubah posisi ikon panah saat hover */
-    .nav-link:hover .fa-arrow-right {
-        transform: translateX(5px); /* Pindahkan ikon panah sedikit ke kanan */
-    }
-
-    /* Kelas untuk link yang aktif */
-    .nav-link.active {
-        background-color: #6f42c1; /* Warna biru keunguan saat aktif */
-        color: white; /* Mengubah warna teks menjadi putih saat aktif */
-        border-radius: 25px; /* Menambahkan efek rounded saat aktif */
-    }
-
-    /* Spasi antara ikon dan teks */
-    .nav-link i {
-        margin-right: 10px;
-    }
-    /* Mengubah ukuran font pagination di Bootstrap */
-    .pagination li a, .pagination li span {
-        font-size: 12px; /* Ukuran font lebih kecil */
-        padding: 5px 10px; /* Menyesuaikan padding agar tampilan tetap rapi */
-    }
-
-    .pagination li {
-        margin-right: 5px; /* Memberikan jarak antara item pagination */
-    }
-
-</style>
-
 
 <body>
-
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">BRI App Activity Tracking</a>
+            <a class="navbar-brand" href="#">📱 BRI Activity Tracking</a>
         </div>
     </nav>
+
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-md-4 col-lg-2 p-3 " style="background-color: #ffffff;">
-                <!-- <h4 class="mb-4">Dashboard</h4> -->
-                <!-- Logo -->
-                <div class="mb-4 text-center">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="img-fluid"
-                        style="max-width: 200px;">
+            <aside class="col-md-3 col-lg-2 sidebar p-3">
+                <div class="text-center mb-4">
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="img-fluid" style="max-width: 180px;">
                 </div>
                 <ul class="nav flex-column">
-                    <!-- Settings -->
-                    <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center {{ Request::is('app-usage*') ? 'active' : '' }}" href="{{ route('app-usage.index') }}">
-                            <i class="fas fa-object-group me-2"></i> App Activity Tracking
+                    <li class="nav-item mb-2">
+                        <a class="nav-link {{ Request::is('dashboard/app-usage') ? 'active' : '' }}" href="{{ route('dashboard.app-usage') }}">
+                            <i class="fas fa-object-group"></i> App Usage
                             <i class="fas fa-angle-right ms-auto"></i>
                         </a>
                     </li>
-                    <!-- History Call -->
                     <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center {{ Request::is('call-logs*') ? 'active' : '' }}" href="{{ route('call-logs.index') }}">
-                            <i class="fas fa-circle-user me-2"></i>
-                            History Call
+                        <a class="nav-link {{ Request::is('dashboard/call-usage') ? 'active' : '' }}" href="{{ route('dashboard.call-usage') }}">
+                            <i class="fas fa-phone"></i> Call Logs
                             <i class="fas fa-angle-right ms-auto"></i>
                         </a>
                     </li>
-
                 </ul>
-            </div>
+            </aside>
 
             <!-- Main Content -->
-            <div class="col-md-8 col-lg-10 p-4" style="background-color: #f5f5f5;">
+            <main class="col-md-9 col-lg-10 p-4">
                 @yield('content')
-            </div>
+            </main>
         </div>
+    </div>
 
+    <!-- JS -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
 
-        <!-- jQuery (must be loaded before DataTables) -->
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <!-- DataTables JS -->
-        <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-        <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
-        <!-- Bootstrap JS -->
-        <!-- Bootstrap JS and Popper.js -->
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
-
-        @yield('scripts') <!-- Allow custom scripts in child views -->
+    @yield('scripts')
 </body>
-
 </html>

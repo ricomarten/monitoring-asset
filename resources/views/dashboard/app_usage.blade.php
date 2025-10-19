@@ -1,114 +1,73 @@
 @extends('layouts.app')
 
+@section('title', 'App Usage Dashboard')
+
 @section('content')
-    <style>
-        .info-card {
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .info-card .icon-container {
-            width: 75px;
-            height: 75px;
-            background-color: #d4f7e4;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .info-card .icon-container i {
-            font-size: 48px;
-            color: #6f42c1;
-        }
-
-        .info-card .content {
-            display: flex;
-            flex-direction: column;
-            text-align: right;
-        }
-
-        .info-card h5 {
-            margin: 0;
-            font-size: 18px;
-            color: #333;
-        }
-
-        .info-card p {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 5px 0;
-            color: #333;
-        }
-
-        .table-wrapper {
-            margin-top: 30px;
-        }
-    </style>
-
-    <div class="container">
-        <!-- Info Card Section -->
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-8 mb-4">
-                <div class="info-card">
-                    <div class="icon-container">
-                        <i class="fas fa-clock"></i>
+<div class="container-fluid">
+    <!-- Info Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Time Used (ms)</h6>
+                        <h4 class="fw-bold">{{ number_format($totalTimeMs) }}</h4>
                     </div>
-                    <div class="content">
-                        <h5>Total time used</h5>
-                        <p>{{ $totalTimeMs }}</p>
-                    </div>
-
-
-                    <div class="icon-container">
-                        <i class="fas fa-tablet-alt"></i>
-                    </div>
-                    <div class="content">
-                        <h5>Total Device</h5>
-                        <p>{{ $totalDevices }}</p>
-                    </div>
-                    <div class="icon-container">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="content">
-                        <h5>Total Visitors</h5>
-                        <p>{{ $totalVisitors }}</p>
-                    </div>
+                    <div class="text-primary fs-2"><i class="fas fa-clock"></i></div>
                 </div>
-
-
             </div>
         </div>
+        <div class="col-lg-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Devices</h6>
+                        <h4 class="fw-bold">{{ $totalDevices }}</h4>
+                    </div>
+                    <div class="text-success fs-2"><i class="fas fa-mobile-alt"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Visitors (Android Versions)</h6>
+                        <h4 class="fw-bold">{{ $totalVisitors }}</h4>
+                    </div>
+                    <div class="text-warning fs-2"><i class="fas fa-users"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <!-- Top Apps Section -->
-        <div class="table-wrapper">
-            <h4>Top Apps Usage</h4>
-            <table id="appUsageTable" class="table table-hover">
-                <thead>
+    <!-- Table -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5>📊 App Usage Logs</h5>
+            <table id="appUsageTable" class="table table-hover w-100">
+                <thead class="table-light">
                     <tr>
                         <th>Device ID</th>
                         <th>App Name</th>
-                        <th>Phone Number</th>
-                        <th>Last Time Used</th>
+                        <th>Package</th>
                         <th>Rank</th>
-                        <th>Total Time Duration</th>
+                        <th>Category</th>
+                        <th>Last Used</th>
+                        <th>Total Time (H:M)</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($appUsageLogs as $log)
-                        @foreach ($log['top_apps'] as $topApp)
+                        @foreach ($log['top_apps'] as $app)
                             <tr>
                                 <td>{{ $log['device_id'] }}</td>
-                                <td>{{ $topApp['app_name'] }}</td>
-                                <td>{{ $log['device_id'] }}</td> <!-- Or Phone number if available -->
-                                <td>{{ $topApp['last_time_used'] }}</td>
-                                <td>{{ $topApp['rank'] }}</td>
-                                <td>{{ gmdate("H:i", $topApp['total_time_ms'] / 1000) }}</td> <!-- Total Time Duration in hours:minutes format -->
+                                <td>{{ $app['app_name'] }}</td>
+                                <td>{{ $app['package_name'] }}</td>
+                                <td>{{ $app['rank'] }}</td>
+                                <td>{{ $app['category'] }}</td>
+                                <td>{{ $app['last_time_used'] }}</td>
+                                <td>{{ gmdate("H:i", $app['total_time_ms'] / 1000) }}</td>
                             </tr>
                         @endforeach
                     @endforeach
@@ -116,27 +75,20 @@
             </table>
         </div>
     </div>
+</div>
 @endsection
 
 @section('scripts')
-    <script>
-        $(document).ready(function() {
-            $('#appUsageTable').DataTable({
-                pagingType: 'full_numbers',  // Pagination buttons
-                responsive: true,            // Responsive table
-                dom: 'lfrtip',               // Display search box, length menu, table, info, and pagination
-                language: {
-                    lengthMenu: 'Show _MENU_ entries per page',
-                    info: 'Showing _START_ to _END_ of _TOTAL_ entries',
-                    infoEmpty: 'Showing 0 to 0 of 0 entries',
-                    infoFiltered: '(filtered from _MAX_ total entries)',
-                    search: 'Search:',
-                    paginate: {
-                        previous: 'Previous',
-                        next: 'Next'
-                    }
-                }
-            });
-        });
-    </script>
+<script>
+$(function() {
+    $('#appUsageTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        language: {
+            search: "Search:",
+            info: "Showing _START_–_END_ of _TOTAL_ entries"
+        }
+    });
+});
+</script>
 @endsection
