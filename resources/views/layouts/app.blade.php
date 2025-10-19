@@ -12,6 +12,9 @@
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     @yield('head')
     <style>
         body {
@@ -38,7 +41,7 @@
 
         .nav-link.active,
         .nav-link:hover {
-            background-color: #6f42c1;
+            background-color: #0d6efd;
             color: white;
             border-radius: 25px;
         }

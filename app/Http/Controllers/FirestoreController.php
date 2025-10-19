@@ -17,30 +17,26 @@ class FirestoreController extends Controller
     }
 
     /* =====================================================
-     |  🔹 Basic Getters (Simple Collections)
+     |  🔹 Basic Getters
      ===================================================== */
     public function getCallLogs()
     {
-        $response = $this->firestore->getCollection('call_logs');
-        return response()->json($response);
+        return response()->json($this->firestore->getCollection('call_logs'));
     }
 
     public function getCalls($documentId)
     {
-        $response = $this->firestore->getSubCollection('call_logs', $documentId, 'calls');
-        return response()->json($response);
+        return response()->json($this->firestore->getSubCollection('call_logs', $documentId, 'calls'));
     }
 
     public function getAppUsage()
     {
-        $response = $this->firestore->getCollection('app_usage');
-        return response()->json($response);
+        return response()->json($this->firestore->getCollection('app_usage'));
     }
 
     public function getUsage($documentId)
     {
-        $response = $this->firestore->getSubCollection('app_usage', $documentId, 'usage');
-        return response()->json($response);
+        return response()->json($this->firestore->getSubCollection('app_usage', $documentId, 'usage'));
     }
 
     /* =====================================================
@@ -69,11 +65,8 @@ class FirestoreController extends Controller
                     $callEnd   = $f['endCall']['stringValue'] ?? null;
                     $simNumber = $f['simNumber']['stringValue'] ?? '';
 
-                    // Filter tanggal
                     if ($startDate && $callStart < $startDate) continue;
                     if ($endDate && $callEnd > $endDate) continue;
-
-                    // Filter nomor
                     if ($phoneNumber && !str_contains($simNumber, $phoneNumber)) continue;
 
                     $results[] = [
@@ -87,7 +80,9 @@ class FirestoreController extends Controller
                 }
             }
 
-            $data = collect($results)->sortBy($sortOrder === 'asc' ? 'call_start' : fn($r) => -strtotime($r['call_start']))->values();
+            $data = collect($results)
+                ->sortBy($sortOrder === 'asc' ? 'call_start' : fn($r) => -strtotime($r['call_start']))
+                ->values();
 
             return response()->json(['callLogs' => $data]);
         } catch (\Exception $e) {
@@ -97,14 +92,14 @@ class FirestoreController extends Controller
     }
 
     /* =====================================================
-     |  🔹 Complex API: App Usage with Top Apps
+     |  🔹 Complex API: App Usage with Top Apps + SIM number
      ===================================================== */
     public function getAllAppUsageWithTopApps(Request $request)
     {
         try {
-            $startDate   = $request->get('startDate');
-            $endDate     = $request->get('endDate');
-            $sortOrder   = $request->get('sortOrder', 'asc');
+            $startDate = $request->get('startDate');
+            $endDate   = $request->get('endDate');
+            $sortOrder = $request->get('sortOrder', 'asc');
 
             $appDocs = $this->firestore->getCollection('app_usage')['documents'] ?? [];
             $results = [];
@@ -114,19 +109,30 @@ class FirestoreController extends Controller
                 $deviceId = $f['deviceId']['stringValue'] ?? '';
                 if (!$deviceId) continue;
 
+                // 🔹 Subcollection usage (top apps)
                 $usageDocs = $this->firestore->getSubCollection('app_usage', $deviceId, 'usage')['documents'] ?? [];
 
+                // 🔹 Subcollection calls (ambil simNumber)
+                $calls = $this->firestore->getSubCollection('call_logs', $deviceId, 'calls')['documents'] ?? [];
+                $simNumber = 'N/A';
+                if (!empty($calls)) {
+                    $fields = $calls[0]['fields'] ?? [];
+                    $simNumber = $fields['simNumber']['stringValue'] ?? 'N/A';
+                }
+
+                // 🔹 Map data app usage
                 $topApps = collect($usageDocs)->map(fn($u) => [
-                    'rank'             => $u['fields']['rank']['integerValue'] ?? 0,
-                    'app_name'         => $u['fields']['app_name']['stringValue'] ?? '',
-                    'package_name'     => $u['fields']['package_name']['stringValue'] ?? '',
-                    'category'         => $u['fields']['category']['stringValue'] ?? '',
-                    'total_time_ms'    => (int)($u['fields']['total_time_ms']['integerValue'] ?? 0),
-                    'last_time_used'   => $u['fields']['last_time_used_formatted']['stringValue'] ?? '',
+                    'rank'          => $u['fields']['rank']['integerValue'] ?? 0,
+                    'app_name'      => $u['fields']['app_name']['stringValue'] ?? '',
+                    'package_name'  => $u['fields']['package_name']['stringValue'] ?? '',
+                    'category'      => $u['fields']['category']['stringValue'] ?? '',
+                    'total_time_ms' => (int)($u['fields']['total_time_ms']['integerValue'] ?? 0),
+                    'last_time_used'=> $u['fields']['last_time_used_formatted']['stringValue'] ?? '',
                 ])->sortBy('rank')->values();
 
                 $results[] = [
                     'device_id'           => $deviceId,
+                    'simNumber'           => $simNumber, // ✅ disesuaikan dengan view
                     'device_model'        => $f['device_model']['stringValue'] ?? '',
                     'android_version'     => $f['android_version']['stringValue'] ?? '',
                     'total_usage_time_ms' => (int)($f['totalUsageTimeMs']['integerValue'] ?? 0),
@@ -135,11 +141,13 @@ class FirestoreController extends Controller
                 ];
             }
 
-            $data = collect($results)->sortBy($sortOrder === 'asc' ? 'last_sync' : fn($r) => -strtotime($r['last_sync']))->values();
+            $data = collect($results)
+                ->sortBy($sortOrder === 'asc' ? 'last_sync' : fn($r) => -strtotime($r['last_sync']))
+                ->values();
 
             return response()->json(['appUsageLogs' => $data]);
         } catch (\Exception $e) {
-            Log::error("Error fetching app usage: " . $e->getMessage());
+            Log::error("Error fetching app usage with simNumber: " . $e->getMessage());
             return response()->json(['error' => 'Failed to fetch app usage.'], 500);
         }
     }
